@@ -391,6 +391,7 @@ export default function App() {
               <a href="#privacy" className="hover:text-indigo-500 transition-colors">Privacy Shield</a>
               <a href="mailto:support.hsbjk@gmail.com" className="hover:text-indigo-500 transition-colors">Support Helpdesk</a>
               <a href="#docs" className="hover:text-indigo-500 transition-colors">Offline API Documentation</a>
+              <a href="https://hsbjk.in" className="hover:text-indigo-500 transition-colors">HSBJK Official Page</a>
             </div>
           </div>
         </footer>
