@@ -149,7 +149,7 @@ const saveToSupabase = async (item: QRHistoryItem) => {
             </div>
             <div>
               <span className="font-display text-base font-extrabold tracking-tight bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 dark:from-white dark:via-indigo-100 dark:to-white bg-clip-text text-transparent">
-                QR<span className="font-medium text-indigo-500">Flow</span>
+                QR<span className="font-medium text-indigo-500">Cloud</span>
               </span>
               <a 
                 href="https://hsbjk.in" 
@@ -245,7 +245,7 @@ const saveToSupabase = async (item: QRHistoryItem) => {
                 Q
               </div>
               <span className="font-display font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
-                QRFlow
+                QRCloud
               </span>
             </div>
 
@@ -452,7 +452,7 @@ const saveToSupabase = async (item: QRHistoryItem) => {
           <div className="max-w-7xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <span className="font-display text-sm font-extrabold text-slate-800 dark:text-white">
-                QR<span className="text-indigo-500">Flow</span>
+                QR<span className="text-indigo-500">Cloud</span>
               </span>
               <span className="text-[11px] text-slate-400">
                 | Powered by <a href="https://hsbjk.in" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 hover:underline font-semibold">hsbjk company</a>. 100% Free Service. All rights reserved.
@@ -463,6 +463,7 @@ const saveToSupabase = async (item: QRHistoryItem) => {
               <a href="#privacy" className="hover:text-indigo-500 transition-colors">Privacy Shield</a>
               <a href="mailto:support.hsbjk@gmail.com" className="hover:text-indigo-500 transition-colors">Support Helpdesk</a>
               <a href="#docs" className="hover:text-indigo-500 transition-colors">Offline API Documentation</a>
+              <a href="https://hsbjk.in" className="hover:text-indigo-500 transition-colors">HSBJK Official Page</a>
             </div>
           </div>
         </footer>
