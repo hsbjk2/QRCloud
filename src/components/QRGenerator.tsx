@@ -151,9 +151,12 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
   const getContentString = (): string => {
     switch (activeTab) {
       case 'url':
-        return url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
-      case 'text':
-        return text;
+    if (!url.trim()) return '';
+    return url.startsWith('http://') || url.startsWith('https://')
+        ? url
+        : `https://${url}`;
+     case 'text':
+    return text.trim();
       case 'wifi':
         return generateWiFiString(wifiSsid, wifiPass, wifiType, wifiHidden);
       case 'email':
@@ -199,11 +202,18 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const rawContent = getContentString();
-    if (!rawContent) {
-      setRenderError('Please fill in content first.');
-      return;
+    const rawContent = getContentString()?.trim();
+
+if (!rawContent) {
+    setRenderError('Please fill in content first.');
+
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
     }
+
+    return;
+}
 
     setRenderError('');
 
