@@ -21,7 +21,8 @@ import {
   Play,
   Square,
   MessageSquare,
-  Barcode
+  Barcode,
+  ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { QRHistoryItem, ExtractedData } from '../types';
@@ -191,10 +192,20 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
     const formatName = getBarcodeFormatName(format);
 
     if (!isQr) {
+      const isUrl = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?(\?.*)?$/i.test(rawText.trim());
+      let cleanUrl = rawText.trim();
+      if (isUrl && !cleanUrl.toLowerCase().startsWith('http://') && !cleanUrl.toLowerCase().startsWith('https://')) {
+        cleanUrl = 'https://' + cleanUrl;
+      }
       parsed.type = 'barcode';
       parsed.title = `${formatName} Barcode`;
       parsed.fields = [
-        { label: 'Barcode Data', value: rawText, copyable: true },
+        { 
+          label: 'Barcode Data', 
+          value: rawText, 
+          copyable: true,
+          link: isUrl ? cleanUrl : undefined
+        },
         { label: 'Format Standard', value: formatName }
       ];
     }
@@ -335,7 +346,7 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
             }}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-xs font-bold transition-all ${
               scanMode === 'upload'
-                ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm border border-slate-200/40 dark:border-slate-650'
+                ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm border border-slate-200/40 dark:border-slate-600'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
             }`}
           >
@@ -349,7 +360,7 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
             }}
             className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-full text-xs font-bold transition-all ${
               scanMode === 'camera'
-                ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm border border-slate-200/40 dark:border-slate-650'
+                ? 'bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-100 shadow-sm border border-slate-200/40 dark:border-slate-600'
                 : 'text-slate-500 dark:text-slate-400 hover:text-slate-800'
             }`}
           >
@@ -369,7 +380,7 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
               className={`w-full h-full flex-1 flex flex-col items-center justify-center border-2 border-dashed rounded-2xl p-8 text-center transition-all cursor-pointer relative overflow-hidden ${
                 dragActive
                   ? 'border-indigo-500 bg-indigo-500/5'
-                  : 'border-slate-250 dark:border-slate-850 hover:border-indigo-400/80 bg-slate-50/50 dark:bg-slate-850/20'
+                  : 'border-slate-200 dark:border-slate-800 hover:border-indigo-400/80 bg-slate-50/50 dark:bg-slate-800/20'
               }`}
             >
               <input
@@ -458,7 +469,7 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
                     </div>
                   ) : (
                     <div className="max-w-xs space-y-4">
-                      <div className="p-4 bg-slate-800/40 border border-slate-850 rounded-full mx-auto w-fit">
+                      <div className="p-4 bg-slate-800/40 border border-slate-800 rounded-full mx-auto w-fit">
                         <Camera className="w-8 h-8 text-slate-400" />
                       </div>
                       <h4 className="text-xs font-bold uppercase text-slate-300 tracking-wide">Live Stream Ready</h4>
@@ -468,7 +479,7 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
                       <button
                         type="button"
                         onClick={startCamera}
-                        className="py-3 px-6 bg-indigo-650 hover:bg-indigo-600 border border-indigo-500 text-white rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow-lg shadow-indigo-500/10 active:scale-95 transition-all text-center focus:outline-none"
+                        className="py-3 px-6 bg-indigo-600 hover:bg-indigo-500 border border-indigo-500 text-white rounded-xl text-xs font-bold inline-flex items-center gap-2 shadow-lg shadow-indigo-500/10 active:scale-95 transition-all text-center focus:outline-none"
                       >
                         <Play className="w-4 h-4 fill-white" />
                         Initialize Camera lens
@@ -495,14 +506,14 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.25 }}
-              className="bg-white dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-850/80 rounded-3xl p-6 shadow-xl relative overflow-hidden"
+              className="bg-white dark:bg-slate-900/60 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/80 rounded-3xl p-6 shadow-xl relative overflow-hidden"
             >
               {/* Highlight background mesh */}
               <div className="absolute top-0 right-0 w-36 h-36 bg-emerald-500/5 dark:bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
 
               <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800/80 pb-4 mb-5">
                 <div className="flex items-center gap-3">
-                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-850 border border-slate-205 dark:border-slate-750">
+                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
                     {getIconForType(extractedData.type)}
                   </div>
                   <div>
@@ -522,7 +533,7 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
                     className={`p-2 rounded-xl border transition-all ${
                       copiedResultRaw
                         ? 'bg-emerald-600 border-emerald-600 text-white'
-                        : 'bg-slate-50 dark:bg-slate-850 border-slate-200/50 dark:border-slate-800 text-slate-600 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-800 shadow-sm'
+                        : 'bg-slate-50 dark:bg-slate-800 border-slate-200/50 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 shadow-sm'
                     }`}
                     title="Copy full RAW textual payload"
                   >
@@ -536,49 +547,63 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
                 {extractedData.fields.map((field) => (
                   <div 
                     key={field.label} 
-                    className="p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-850/40 border border-slate-100 dark:border-slate-800/50 flex flex-col md:flex-row md:items-center justify-between gap-3 text-sm"
+                    className="p-3.5 rounded-2xl bg-slate-50/80 dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-3 text-sm shadow-sm"
                   >
                     <div className="space-y-0.5 min-w-0 flex-1">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">{field.label}</span>
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">{field.label}</span>
                       {field.link ? (
                         <a 
                           href={field.link} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className="block font-medium text-indigo-600 dark:text-indigo-400 hover:underline break-all break-words"
+                          className="block font-semibold text-indigo-600 dark:text-indigo-400 hover:underline break-all break-words"
                         >
                           {field.value}
                         </a>
                       ) : (
-                        <span className="block font-medium text-slate-700 dark:text-slate-350 select-text break-all break-words">
+                        <span className="block font-medium text-slate-800 dark:text-slate-100 select-text break-all break-words">
                           {field.value || '(Field empty)'}
                         </span>
                       )}
                     </div>
 
-                    {field.copyable && field.value && (
-                      <button
-                        type="button"
-                        onClick={() => copyFieldValue(field.label, field.value)}
-                        className={`py-1.5 px-3 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all w-fit md:w-auto ${
-                          copiedField === field.label
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-700 text-slate-700 dark:text-slate-350 shadow-sm'
-                        }`}
-                      >
-                        {copiedField === field.label ? (
-                          <>
-                            <Check className="w-3 h-3" />
-                            Copied
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3 h-3" />
-                            Copy
-                          </>
-                        )}
-                      </button>
-                    )}
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                      {field.link && (
+                        <a
+                          href={field.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="py-1.5 px-3 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm hover:scale-[1.02] active:scale-[0.98] transition-all"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Open Link
+                        </a>
+                      )}
+
+                      {field.copyable && field.value && (
+                        <button
+                          type="button"
+                          onClick={() => copyFieldValue(field.label, field.value)}
+                          className={`py-1.5 px-3 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all w-fit md:w-auto ${
+                            copiedField === field.label
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-700 text-slate-700 dark:text-slate-300 shadow-sm'
+                          }`}
+                        >
+                          {copiedField === field.label ? (
+                            <>
+                              <Check className="w-3 h-3" />
+                              Copied
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="w-3 h-3" />
+                              Copy
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -593,8 +618,8 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
 
             </motion.div>
           ) : (
-            <div key="no-result" className="h-full flex-1 min-h-[400px] border border-dashed border-slate-200 dark:border-slate-850 rounded-3xl p-8 flex flex-col items-center justify-center text-center">
-              <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-850 rounded-full mb-4">
+            <div key="no-result" className="h-full flex-1 min-h-[400px] border border-dashed border-slate-200 dark:border-slate-800 rounded-3xl p-8 flex flex-col items-center justify-center text-center">
+              <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 rounded-full mb-4">
                 <Globe className="w-8 h-8 text-indigo-400/80 stroke-[1.5]" />
               </div>
               <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">

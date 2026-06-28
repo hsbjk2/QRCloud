@@ -54,6 +54,12 @@ const DEFAULT_VALUES: Record<string, string> = {
   Pharmacode: '1234'
 };
 
+const mapFormatForJsBarcode = (fmt: string): string => {
+  if (fmt === 'UPC-A') return 'UPC';
+  if (fmt === 'Pharmacode') return 'pharmacode';
+  return fmt;
+};
+
 export default function BarcodeGenerator({ onAddHistory }: BarcodeGeneratorProps) {
   const [format, setFormat] = useState('CODE128');
   const [value, setValue] = useState(DEFAULT_VALUES.CODE128);
@@ -149,7 +155,7 @@ export default function BarcodeGenerator({ onAddHistory }: BarcodeGeneratorProps
         // Clear children to avoid drawing glitches on fast renders
         svgRef.current.innerHTML = '';
         JsBarcode(svgRef.current, value, {
-          format,
+          format: mapFormatForJsBarcode(format),
           width,
           height,
           displayValue,
@@ -168,7 +174,7 @@ export default function BarcodeGenerator({ onAddHistory }: BarcodeGeneratorProps
 
       if (canvasRef.current) {
         JsBarcode(canvasRef.current, value, {
-          format,
+          format: mapFormatForJsBarcode(format),
           width,
           height,
           displayValue,
@@ -383,8 +389,8 @@ export default function BarcodeGenerator({ onAddHistory }: BarcodeGeneratorProps
                   onClick={() => handleFormatChange(fmt.id)}
                   className={`p-3 text-left rounded-xl border transition-all hover:scale-[1.02] active:scale-98 ${
                     format === fmt.id
-                      ? 'border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/20 text-indigo-650 dark:text-indigo-400'
-                      : 'border-slate-200/40 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/30 text-slate-650 dark:text-slate-350 hover:bg-slate-100/60 dark:hover:bg-slate-800/50'
+                      ? 'border-indigo-500 bg-indigo-50/40 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400'
+                      : 'border-slate-200/40 dark:border-slate-800/60 bg-slate-50/50 dark:bg-slate-900/30 text-slate-600 dark:text-slate-300 hover:bg-slate-100/60 dark:hover:bg-slate-800/50'
                   }`}
                 >
                   <span className="block text-[11px] font-extrabold leading-none mb-1">
@@ -418,7 +424,7 @@ export default function BarcodeGenerator({ onAddHistory }: BarcodeGeneratorProps
                   step={1}
                   value={width}
                   onChange={(e) => setWidth(Number(e.target.value))}
-                  className="w-full h-1 bg-slate-250 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                  className="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                 />
               </div>
 
@@ -434,7 +440,7 @@ export default function BarcodeGenerator({ onAddHistory }: BarcodeGeneratorProps
                   step={5}
                   value={height}
                   onChange={(e) => setHeight(Number(e.target.value))}
-                  className="w-full h-1 bg-slate-250 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                  className="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                 />
               </div>
 
@@ -450,7 +456,7 @@ export default function BarcodeGenerator({ onAddHistory }: BarcodeGeneratorProps
                   step={2}
                   value={margin}
                   onChange={(e) => setMargin(Number(e.target.value))}
-                  className="w-full h-1 bg-slate-250 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                  className="w-full h-1 bg-slate-200 dark:bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                 />
               </div>
             </div>
@@ -472,14 +478,14 @@ export default function BarcodeGenerator({ onAddHistory }: BarcodeGeneratorProps
                   onChange={(e) => setDisplayValue(e.target.checked)}
                   className="w-4.5 h-4.5 rounded text-indigo-600 focus:ring-indigo-500/20 border-slate-300 bg-slate-50 dark:bg-slate-800 cursor-pointer"
                 />
-                <label htmlFor="displayValue" className="text-xs font-semibold text-slate-750 dark:text-slate-300 cursor-pointer select-none">
+                <label htmlFor="displayValue" className="text-xs font-semibold text-slate-700 dark:text-slate-300 cursor-pointer select-none">
                   Display Value Text Below
                 </label>
               </div>
 
               <div className="w-full md:w-2/3 grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">
                     Line Color Hex
                   </label>
                   <input
@@ -490,7 +496,7 @@ export default function BarcodeGenerator({ onAddHistory }: BarcodeGeneratorProps
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-450 dark:text-slate-500 uppercase tracking-wider mb-1.5">
+                  <label className="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-1.5">
                     Background Hex
                   </label>
                   <input
@@ -518,7 +524,7 @@ export default function BarcodeGenerator({ onAddHistory }: BarcodeGeneratorProps
                       setLineColor(preset.fg);
                       setBackground(preset.bg);
                     }}
-                    className={`px-3 py-1.5 rounded-lg text-[11px] font-medium border flex items-center gap-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-750 border-slate-200/50 dark:border-slate-700 hover:scale-102 active:scale-95 transition-all text-slate-700 dark:text-slate-300`}
+                    className={`px-3 py-1.5 rounded-lg text-[11px] font-medium border flex items-center gap-2 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 border-slate-200/50 dark:border-slate-700 hover:scale-102 active:scale-95 transition-all text-slate-700 dark:text-slate-300`}
                   >
                     <span 
                       className="w-2.5 h-2.5 rounded-full border border-slate-300/40" 

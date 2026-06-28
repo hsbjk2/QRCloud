@@ -87,7 +87,7 @@ export default function QRHistory({ items, onClearAll, onDeleteItem }: QRHistory
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search recent codes..."
-            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/45 border border-slate-200/40 dark:border-slate-850 rounded-xl text-xs font-semibold text-slate-750 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+            className="w-full pl-10 pr-4 py-2 bg-slate-50 dark:bg-slate-800/45 border border-slate-200/40 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-none focus:ring-1 focus:ring-indigo-500"
           />
         </div>
 
@@ -135,7 +135,7 @@ export default function QRHistory({ items, onClearAll, onDeleteItem }: QRHistory
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.8 }}
                 onClick={() => setSelectedItem(item)}
-                className="bg-white dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-850/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group cursor-pointer relative overflow-hidden"
+                className="bg-white dark:bg-slate-900/60 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group cursor-pointer relative overflow-hidden"
               >
                 {/* Generated colored glow accents */}
                 <span 
@@ -145,7 +145,7 @@ export default function QRHistory({ items, onClearAll, onDeleteItem }: QRHistory
 
                 <div className="flex items-start gap-3">
                   {/* Thumbnail / QR source icon */}
-                  <div className="p-2 bg-slate-55 dark:bg-slate-850 border border-slate-150 dark:border-slate-750/70 rounded-xl shrink-0 group-hover:scale-105 transition-all">
+                  <div className="p-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shrink-0 group-hover:scale-105 transition-all">
                     {getIconForType(item.type)}
                   </div>
 
@@ -156,14 +156,14 @@ export default function QRHistory({ items, onClearAll, onDeleteItem }: QRHistory
                     <h4 className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate mt-1">
                       {item.title}
                     </h4>
-                    <p className="text-[11px] text-slate-505 dark:text-slate-400 truncate max-w-full font-mono mt-0.5">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate max-w-full font-mono mt-0.5">
                       {item.content}
                     </p>
                   </div>
                 </div>
 
                 {/* Footer specs */}
-                <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-850 pt-3 mt-3">
+                <div className="flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-3 mt-3">
                   <span className="flex items-center gap-1 text-[10px] text-slate-400 font-medium">
                     <Calendar className="w-3 h-3" />
                     {item.createdAt}
@@ -179,7 +179,7 @@ export default function QRHistory({ items, onClearAll, onDeleteItem }: QRHistory
                       className={`p-1.5 rounded-lg border transition-all ${
                         copiedItemId === item.id
                           ? 'bg-emerald-600 border-emerald-600 text-white'
-                          : 'bg-transparent border-slate-200/50 dark:border-slate-800 text-slate-450 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                          : 'bg-transparent border-slate-200/50 dark:border-slate-800 text-slate-400 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
                       }`}
                     >
                       {copiedItemId === item.id ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -204,10 +204,10 @@ export default function QRHistory({ items, onClearAll, onDeleteItem }: QRHistory
               animate={{ opacity: 1 }}
               className="col-span-full py-16 flex flex-col items-center justify-center text-center opacity-70"
             >
-              <div className="p-3 bg-slate-50 dark:bg-slate-850 border border-slate-150 dark:border-slate-800 rounded-full mb-3">
+              <div className="p-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 rounded-full mb-3">
                 <Search className="w-6 h-6 text-slate-400" />
               </div>
-              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-305 uppercase tracking-wide">
+              <h4 className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">
                 No entries match filters
               </h4>
               <p className="text-[11px] text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed mt-1">
@@ -256,7 +256,7 @@ export default function QRHistory({ items, onClearAll, onDeleteItem }: QRHistory
                   </div>
                 )}
 
-                <div className="bg-slate-50 dark:bg-slate-850/65 p-3 rounded-xl text-left border border-slate-150 dark:border-slate-800">
+                <div className="bg-slate-50 dark:bg-slate-800 p-3 rounded-xl text-left border border-slate-200 dark:border-slate-800">
                   <span className="block text-[9px] text-slate-400 font-bold uppercase tracking-widest mb-1">Payload Content</span>
                   <p className="text-xs font-mono text-slate-700 dark:text-slate-300 break-all select-all font-medium leading-relaxed max-h-[100px] overflow-y-auto">
                     {selectedItem.content}
@@ -270,7 +270,7 @@ export default function QRHistory({ items, onClearAll, onDeleteItem }: QRHistory
                       navigator.clipboard.writeText(selectedItem.content);
                       alert('Copied raw details!');
                     }}
-                    className="flex-1 py-2.5 rounded-xl bg-slate-105 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-xs font-bold transition border border-slate-200/50 dark:border-slate-700/50"
+                    className="flex-1 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-750 text-slate-700 dark:text-slate-200 text-xs font-bold transition border border-slate-200/50 dark:border-slate-700/50"
                   >
                     Copy String
                   </button>

@@ -239,7 +239,7 @@ const saveToSupabase = async (item: QRHistoryItem) => {
             </a>
             <a
               href="mailto:support.hsbjk@gmail.com"
-              className="mt-2 inline-flex items-center gap-1 text-[10px] text-indigo-650 dark:text-indigo-400 hover:underline font-semibold"
+              className="mt-2 inline-flex items-center gap-1 text-[10px] text-indigo-600 dark:text-indigo-400 hover:underline font-semibold"
             >
               Contact support.hsbjk@gmail.com
             </a>
@@ -295,7 +295,7 @@ const saveToSupabase = async (item: QRHistoryItem) => {
 
   <a
     href="mailto:support.hsbjk@gmail.com"
-    className="hidden sm:inline-flex py-1.5 px-3 rounded-full border border-slate-200 dark:border-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-650 dark:text-slate-300 transition-all duration-300 shadow-sm"
+    className="hidden sm:inline-flex py-1.5 px-3 rounded-full border border-slate-200 dark:border-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-300 transition-all duration-300 shadow-sm"
   >
     Support Helpdesk
   </a>
@@ -308,7 +308,7 @@ const saveToSupabase = async (item: QRHistoryItem) => {
           
           {/* Hero Pitch Showcase */}
           <section id="hero-pitch" className="text-center space-y-4 max-w-2xl mx-auto pt-2 relative">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100/40 dark:border-indigo-500/20 rounded-full text-[10px] font-bold text-indigo-700 dark:text-indigo-350 uppercase tracking-widest mx-auto shadow-sm">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-100/40 dark:border-indigo-500/20 rounded-full text-[10px] font-bold text-indigo-700 dark:text-indigo-300 uppercase tracking-widest mx-auto shadow-sm">
               <Sparkles className="w-3 h-3 text-indigo-500 animate-pulse" />
               Professional Polish Design
             </div>

@@ -1031,7 +1031,7 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
                   type="button"
                   key={preset.name}
                   onClick={() => applyColorPreset(preset)}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl border bg-slate-50 dark:bg-slate-800 border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-750 transition-all ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-xl border bg-slate-50 dark:bg-slate-800 border-slate-200/50 dark:border-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-all ${
                     fgColor === preset.fg && bgColor === preset.bg
                       ? 'border-indigo-500 ring-2 ring-indigo-500/20 font-semibold'
                       : ''
@@ -1051,7 +1051,7 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
                 </label>
                 <div className="flex items-center gap-3">
                   {/* Outer Capsule Ring with Vertical Inner Inset Filled Color Block */}
-                  <div className="relative w-12 h-12 rounded-full border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-900/60 flex items-center justify-center cursor-pointer hover:border-slate-450 dark:hover:border-slate-500 shadow-sm hover:scale-105 active:scale-95 transition-all">
+                  <div className="relative w-12 h-12 rounded-full border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-900/60 flex items-center justify-center cursor-pointer hover:border-slate-400 dark:hover:border-slate-500 shadow-sm hover:scale-105 active:scale-95 transition-all">
                     <div 
                       className="w-5 h-8 rounded-[4px] shadow-sm transition-colors duration-200" 
                       style={{ backgroundColor: fgColor }} 
@@ -1082,7 +1082,7 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
                 </label>
                 <div className="flex items-center gap-3">
                   {/* Outer Capsule Ring with Vertical Inner Inset Filled Color Block */}
-                  <div className="relative w-12 h-12 rounded-full border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-900/60 flex items-center justify-center cursor-pointer hover:border-slate-450 dark:hover:border-slate-500 shadow-sm hover:scale-105 active:scale-95 transition-all">
+                  <div className="relative w-12 h-12 rounded-full border border-slate-300 dark:border-slate-700/80 bg-white dark:bg-slate-900/60 flex items-center justify-center cursor-pointer hover:border-slate-400 dark:hover:border-slate-500 shadow-sm hover:scale-105 active:scale-95 transition-all">
                     <div 
                       className="w-5 h-8 rounded-[4px] shadow-sm border border-slate-100 dark:border-slate-800 transition-colors duration-200" 
                       style={{ backgroundColor: bgColor }} 
@@ -1187,7 +1187,7 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
             </div>
 
             {/* Custom Logo File Uploader */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center bg-slate-50 dark:bg-slate-900/30 p-4 border border-slate-100 dark:border-slate-850 rounded-2xl">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center bg-slate-50 dark:bg-slate-900/30 p-4 border border-slate-100 dark:border-slate-800 rounded-2xl">
               <div>
                 <label className="block text-xs font-semibold text-slate-600 dark:text-slate-300 mb-1">
                   Upload Custom logo image
@@ -1216,7 +1216,7 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
               </div>
 
               {customLogoUrl && (
-                <div className="md:col-span-2 flex items-center justify-between bg-white dark:bg-slate-850 px-3 py-1.5 border border-slate-200/50 dark:border-slate-800 rounded-xl mt-2">
+                <div className="md:col-span-2 flex items-center justify-between bg-white dark:bg-slate-800 px-3 py-1.5 border border-slate-200/50 dark:border-slate-800 rounded-xl mt-2">
                   <div className="flex items-center gap-2">
                     <img src={customLogoUrl} alt="custom logo" className="w-6 h-6 object-contain rounded" />
                     <span className="text-[11px] font-mono text-slate-500 truncate max-w-[180px]">Custom logo active</span>
