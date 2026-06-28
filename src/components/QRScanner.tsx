@@ -1,5 +1,9 @@
 import { useState, useEffect, useRef, DragEvent, ChangeEvent } from 'react';
-import jsQR from 'jsqr';
+import { 
+  BrowserMultiFormatReader, 
+  BarcodeFormat,
+  Result
+} from '@zxing/library';
 import { 
   Camera, 
   Upload, 
@@ -16,7 +20,8 @@ import {
   AlertTriangle,
   Play,
   Square,
-  MessageSquare
+  MessageSquare,
+  Barcode
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { QRHistoryItem, ExtractedData } from '../types';
@@ -24,6 +29,31 @@ import { parseQRContent } from '../utils';
 
 interface QRScannerProps {
   onAddHistory: (item: QRHistoryItem) => void;
+}
+
+const codeReader = new BrowserMultiFormatReader();
+
+function getBarcodeFormatName(format: BarcodeFormat): string {
+  switch (format) {
+    case BarcodeFormat.QR_CODE: return 'QR Code';
+    case BarcodeFormat.AZTEC: return 'Aztec';
+    case BarcodeFormat.CODABAR: return 'Codabar';
+    case BarcodeFormat.CODE_39: return 'Code 39';
+    case BarcodeFormat.CODE_93: return 'Code 93';
+    case BarcodeFormat.CODE_128: return 'Code 128';
+    case BarcodeFormat.DATA_MATRIX: return 'Data Matrix';
+    case BarcodeFormat.EAN_8: return 'EAN-8';
+    case BarcodeFormat.EAN_13: return 'EAN-13';
+    case BarcodeFormat.ITF: return 'ITF';
+    case BarcodeFormat.MAXICODE: return 'MaxiCode';
+    case BarcodeFormat.PDF_417: return 'PDF 417';
+    case BarcodeFormat.RSS_14: return 'RSS-14';
+    case BarcodeFormat.RSS_EXPANDED: return 'RSS Expanded';
+    case BarcodeFormat.UPC_A: return 'UPC-A';
+    case BarcodeFormat.UPC_E: return 'UPC-E';
+    case BarcodeFormat.UPC_EAN_EXTENSION: return 'UPC/EAN Extension';
+    default: return 'Barcode';
+  }
 }
 
 export default function QRScanner({ onAddHistory }: QRScannerProps) {
@@ -60,6 +90,11 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
+    }
+    try {
+      codeReader.reset();
+    } catch (e) {
+      console.error('Error resetting code reader:', e);
     }
     setCameraActive(false);
     setScanStatus('Idle');
@@ -99,45 +134,41 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
 
   // Continuously analyze video frames
   useEffect(() => {
-    if (!cameraActive) return;
+    if (!cameraActive || !videoRef.current) return;
 
-    const processFrame = () => {
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
+    let isStopped = false;
 
-      if (video && canvas && video.readyState === video.HAVE_ENOUGH_DATA) {
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          
-          // Draw current frame onto canvas
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          
-          // Grab current frame details
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const code = jsQR(imageData.data, imageData.width, imageData.height, {
-            inversionAttempts: 'dontInvert',
-          });
-
-          if (code && code.data) {
-            handleSuccessfulScan(code.data);
-            return; // stop further frame animation draws
-          }
+    const startDecoding = async () => {
+      try {
+        const result = await codeReader.decodeOnce(videoRef.current!);
+        if (!isStopped && result) {
+          handleSuccessfulScan(result);
         }
-      }
-
-      // Continue to next animation frame
-      if (cameraActive) {
-        animationFrameRef.current = requestAnimationFrame(processFrame);
+      } catch (e) {
+        // decodeOnce can fail if reset is called or if there's an error
+        console.log('Decoding stopped or failed:', e);
       }
     };
 
-    animationFrameRef.current = requestAnimationFrame(processFrame);
+    const video = videoRef.current;
+    const handlePlay = () => {
+      if (!isStopped) {
+        startDecoding();
+      }
+    };
+
+    video.addEventListener('playing', handlePlay);
+    if (video.readyState >= 2) { // HAVE_CURRENT_DATA or higher
+      startDecoding();
+    }
 
     return () => {
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
+      isStopped = true;
+      video.removeEventListener('playing', handlePlay);
+      try {
+        codeReader.reset();
+      } catch (e) {
+        console.error('Error resetting code reader in cleanup:', e);
       }
     };
   }, [cameraActive]);
@@ -149,17 +180,31 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
     };
   }, []);
 
-  const handleSuccessfulScan = (rawText: string) => {
+  const handleSuccessfulScan = (result: Result) => {
     stopCamera();
+    const rawText = result.getText();
+    const format = result.getBarcodeFormat();
+    const isQr = format === BarcodeFormat.QR_CODE;
     
     // Parse the data
     const parsed = parseQRContent(rawText);
+    const formatName = getBarcodeFormatName(format);
+
+    if (!isQr) {
+      parsed.type = 'barcode';
+      parsed.title = `${formatName} Barcode`;
+      parsed.fields = [
+        { label: 'Barcode Data', value: rawText, copyable: true },
+        { label: 'Format Standard', value: formatName }
+      ];
+    }
+    
     setExtractedData(parsed);
 
     // Save to history automatically
     const historyItem: QRHistoryItem = {
       id: Math.random().toString(36).substring(2, 11),
-      type: parsed.type === 'vcard' || parsed.type === 'location' || parsed.type === 'unknown' ? 'text' : parsed.type,
+      type: isQr ? (parsed.type === 'vcard' || parsed.type === 'location' || parsed.type === 'unknown' ? 'text' : parsed.type) : 'barcode',
       title: `${parsed.title} (Scanned)`,
       content: rawText,
       fgColor: '#000000',
@@ -212,23 +257,18 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
       const img = new Image();
       img.src = dataUrl;
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx.drawImage(img, 0, 0, img.width, img.height);
-          
-          const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-          setIsProcessingFile(false);
-          if (code && code.data) {
-            handleSuccessfulScan(code.data);
-          } else {
-            alert('No clear QR Code detected in this image. Please ensure the QR Code is highly visible and has a high contrast.');
-          }
-        }
+        codeReader.decodeFromImageElement(img)
+          .then((result) => {
+            setIsProcessingFile(false);
+            if (result) {
+              handleSuccessfulScan(result);
+            }
+          })
+          .catch((err) => {
+            console.error('File decoding error:', err);
+            setIsProcessingFile(false);
+            alert('No clear QR Code or Barcode detected in this image. Please ensure the code is highly visible and has a high contrast.');
+          });
       };
     };
     reader.readAsDataURL(file);
@@ -270,6 +310,8 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
         return <Phone className="w-5 h-5 text-rose-500" />;
       case 'sms':
         return <MessageSquare className="w-5 h-5 text-cyan-500" />;
+      case 'barcode':
+        return <Barcode className="w-5 h-5 text-violet-500" />;
       default:
         return <FileText className="w-5 h-5 text-slate-500" />;
     }
@@ -343,10 +385,10 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
               </div>
 
               <h4 className="text-sm font-bold text-slate-700 dark:text-slate-200 mb-1">
-                Drag and drop your QR code image
+                Drag and drop your QR or Barcode image
               </h4>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed mb-4">
-                Supports standard formats: JPEG, PNG, WEBP. Makes immediate frame assessments.
+                Supports standard formats: QR Codes, UPC, EAN, CODE128, CODE39, and more. Makes immediate assessments.
               </p>
 
               <span className="text-xs font-bold px-4 py-2 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shadow-sm">
@@ -496,19 +538,19 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
                     key={field.label} 
                     className="p-3 rounded-2xl bg-slate-50/50 dark:bg-slate-850/40 border border-slate-100 dark:border-slate-800/50 flex flex-col md:flex-row md:items-center justify-between gap-3 text-sm"
                   >
-                    <div className="space-y-0.5 truncate max-w-[80%]">
-                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">{field.label}</span>
+                    <div className="space-y-0.5 min-w-0 flex-1">
+                      <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest block">{field.label}</span>
                       {field.link ? (
                         <a 
                           href={field.link} 
                           target="_blank" 
                           rel="noopener noreferrer" 
-                          className="block font-medium text-indigo-600 dark:text-indigo-400 hover:underline truncate"
+                          className="block font-medium text-indigo-600 dark:text-indigo-400 hover:underline break-all break-words"
                         >
                           {field.value}
                         </a>
                       ) : (
-                        <span className="block font-medium text-slate-700 dark:text-slate-350 select-text truncate">
+                        <span className="block font-medium text-slate-700 dark:text-slate-350 select-text break-all break-words">
                           {field.value || '(Field empty)'}
                         </span>
                       )}
@@ -542,9 +584,9 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
               </div>
 
               {/* Global Extracted Raw Payload block */}
-              <div>
+              <div className="w-full max-w-full overflow-hidden">
                 <span className="block text-[11px] font-bold text-slate-500 uppercase tracking-widest mb-2">RAW Decoded Payload</span>
-                <pre className="p-3 bg-slate-950 dark:bg-black border border-slate-800 rounded-xl text-[11px] text-slate-400 font-mono whitespace-pre-wrap select-all">
+                <pre className="p-3 bg-slate-950 dark:bg-black border border-slate-800 rounded-xl text-[11px] text-slate-400 font-mono whitespace-pre-wrap break-all break-words overflow-x-auto w-full max-w-full select-all">
                   {extractedData.raw}
                 </pre>
               </div>
@@ -556,10 +598,10 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
                 <Globe className="w-8 h-8 text-indigo-400/80 stroke-[1.5]" />
               </div>
               <h4 className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
-                Waiting on QR Decode Scan
+                Waiting on Code Scan
               </h4>
               <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed">
-                Provide raw system assets, scan frames with webcam or drop visual barcodes to display the extracted fields instantly.
+                Provide raw system assets, scan frames with webcam or drop visual QR codes and barcodes to display the extracted fields instantly.
               </p>
             </div>
           )}

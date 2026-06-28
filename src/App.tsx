@@ -24,10 +24,12 @@ import {
   ArrowRight,
   TrendingUp,
   Award,
-  Heart
+  Heart,
+  Barcode
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import QRGenerator from './components/QRGenerator';
+import BarcodeGenerator from './components/BarcodeGenerator';
 import QRScanner from './components/QRScanner';
 import QRHistory from './components/QRHistory';
 import ThemeToggle from './components/ThemeToggle';
@@ -36,7 +38,7 @@ import { QRHistoryItem } from './types';
 export default function App() {
 const { user } = useUser();
   // Navigation active tab index
-  const [activeTab, setActiveTab] = useState<'create' | 'scan' | 'history'>('create');
+  const [activeTab, setActiveTab] = useState<'create' | 'barcode' | 'scan' | 'history'>('create');
 
 
  const [historyItems, setHistoryItems] = useState<QRHistoryItem[]>([]);
@@ -181,6 +183,18 @@ const saveToSupabase = async (item: QRHistoryItem) => {
             </button>
 
             <button
+              onClick={() => setActiveTab('barcode')}
+              className={`w-full flex items-center px-4 py-3 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
+                activeTab === 'barcode'
+                  ? 'sidebar-active shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/40 hover:text-slate-800 dark:hover:text-slate-200'
+              }`}
+            >
+              <Barcode className="w-4 h-4 mr-3 stroke-[2]" />
+              Generate Barcode
+            </button>
+
+            <button
               onClick={() => setActiveTab('scan')}
               className={`w-full flex items-center px-4 py-3 rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer ${
                 activeTab === 'scan'
@@ -251,7 +265,7 @@ const saveToSupabase = async (item: QRHistoryItem) => {
 
             {/* Desktop current action title */}
             <h1 className="hidden md:block text-base font-bold text-slate-800 dark:text-slate-100">
-              {activeTab === 'create' ? 'Generate New Code' : activeTab === 'scan' ? 'Scan & Extract Data' : 'History Log Archive'}
+              {activeTab === 'create' ? 'Generate New Code' : activeTab === 'barcode' ? 'Generate Barcode' : activeTab === 'scan' ? 'Scan & Extract Data' : 'History Log Archive'}
             </h1>
           </div>
 
@@ -301,11 +315,11 @@ const saveToSupabase = async (item: QRHistoryItem) => {
 
             <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight leading-[1.1] text-slate-900 dark:text-white capitalize">
               Generate, scan <span className="relative inline-block"><span className="text-indigo-600 dark:text-indigo-400">&amp; extract</span>
-              <span className="absolute bottom-1 left-0 -right-1 h-0.5 bg-indigo-500 dark:bg-indigo-400/40 rounded" /></span> QR codes instantly
+              <span className="absolute bottom-1 left-0 -right-1 h-0.5 bg-indigo-500 dark:bg-indigo-400/40 rounded" /></span> QR &amp; Barcodes instantly
             </h1>
             
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl mx-auto">
-              Designed for modern professionals. Create beautifully branded QR codes with custom logos, dynamic palettes, rounded dot matrices, and scan physical labels in real-time.
+              Designed for modern professionals. Create beautifully branded QR &amp; Barcodes with custom logos, dynamic palettes, rounded dot matrices, and scan physical labels in real-time.
             </p>
 
             <div className="flex items-center gap-6 justify-center flex-wrap pt-1">
@@ -374,7 +388,18 @@ const saveToSupabase = async (item: QRHistoryItem) => {
               }`}
             >
               <QrCode className="w-4 h-4" />
-              Create
+              Create QR
+            </button>
+            <button
+              onClick={() => setActiveTab('barcode')}
+              className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 rounded-xl text-[10px] font-bold transition-all ${
+                activeTab === 'barcode'
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'text-slate-500 dark:text-slate-400'
+              }`}
+            >
+              <Barcode className="w-4 h-4" />
+              Barcode
             </button>
             <button
               onClick={() => setActiveTab('scan')}
@@ -412,6 +437,18 @@ const saveToSupabase = async (item: QRHistoryItem) => {
                   transition={{ duration: 0.25 }}
                 >
                   <QRGenerator onAddHistory={handleAddHistory} />
+                </motion.div>
+              )}
+
+              {activeTab === 'barcode' && (
+                <motion.div
+                  key="barcode"
+                  initial={{ opacity: 0, scale: 0.98, y: 15 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.98, y: -15 }}
+                  transition={{ duration: 0.25 }}
+                >
+                  <BarcodeGenerator onAddHistory={handleAddHistory} />
                 </motion.div>
               )}
 

@@ -13,7 +13,8 @@ import {
   Calendar,
   X,
   ExternalLink,
-  ChevronRight
+  ChevronRight,
+  Barcode
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { QRHistoryItem } from '../types';
@@ -65,6 +66,8 @@ export default function QRHistory({ items, onClearAll, onDeleteItem }: QRHistory
         return <Phone className="w-4 h-4 text-rose-500" />;
       case 'sms':
         return <MessageSquare className="w-4 h-4 text-cyan-500" />;
+      case 'barcode':
+        return <Barcode className="w-4 h-4 text-violet-500" />;
       default:
         return <FileText className="w-4 h-4 text-slate-500" />;
     }

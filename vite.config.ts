@@ -9,6 +9,9 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
+        ...(process.env.VITE_CLERK_PUBLISHABLE_KEY ? {} : {
+          '@clerk/clerk-react': path.resolve(__dirname, './src/lib/clerk-mock.tsx')
+        })
       },
     },
     server: {

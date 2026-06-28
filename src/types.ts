@@ -1,4 +1,4 @@
-export type QRType = 'url' | 'text' | 'email' | 'phone' | 'wifi' | 'sms' | 'social';
+export type QRType = 'url' | 'text' | 'email' | 'phone' | 'wifi' | 'sms' | 'social' | 'barcode';
 
 export interface QRConfig {
   type: QRType;
