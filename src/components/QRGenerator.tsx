@@ -151,12 +151,9 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
   const getContentString = (): string => {
     switch (activeTab) {
       case 'url':
-    if (!url.trim()) return '';
-    return url.startsWith('http://') || url.startsWith('https://')
-        ? url
-        : `https://${url}`;
-     case 'text':
-    return text.trim();
+        return url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
+      case 'text':
+        return text;
       case 'wifi':
         return generateWiFiString(wifiSsid, wifiPass, wifiType, wifiHidden);
       case 'email':
@@ -202,18 +199,40 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const rawContent = getContentString()?.trim();
-
-if (!rawContent) {
-    setRenderError('Please fill in content first.');
-
-    const ctx = canvas.getContext('2d');
-    if (ctx) {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const rawContent = getContentString();
+    
+    // Check if the input is actually empty for the active tab
+    let isTabEmpty = false;
+    switch (activeTab) {
+      case 'url':
+        isTabEmpty = !url.trim();
+        break;
+      case 'text':
+        isTabEmpty = !text.trim();
+        break;
+      case 'wifi':
+        isTabEmpty = !wifiSsid.trim();
+        break;
+      case 'email':
+        isTabEmpty = !emailTo.trim();
+        break;
+      case 'phone':
+        isTabEmpty = !phoneNum.trim();
+        break;
+      case 'sms':
+        isTabEmpty = !smsPhone.trim();
+        break;
+      case 'social':
+        isTabEmpty = !socialUsername.trim();
+        break;
+      default:
+        isTabEmpty = !rawContent;
     }
 
-    return;
-}
+    if (isTabEmpty) {
+      setRenderError('Please fill in content first.');
+      return;
+    }
 
     setRenderError('');
 
@@ -1259,95 +1278,95 @@ if (!rawContent) {
             QR Canvas Preview
           </h4>
 
-          {renderError ? (
+          {renderError && (
             <div className="flex flex-col items-center justify-center min-h-[220px] max-w-[240px] text-center gap-2">
               <RefreshCw className="w-8 h-8 text-rose-500 animate-spin" />
               <p className="text-xs text-rose-400 font-semibold">{renderError}</p>
             </div>
-          ) : useSocialCard ? (
-            /* High Fidelity Instagram Theme Card View */
-            <div className={`relative w-full rounded-2xl bg-gradient-to-b ${SOCIAL_THEMES[socialPlatform as keyof typeof SOCIAL_THEMES]?.bgGradient || 'from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]'} p-6 py-8 flex flex-col items-center justify-center transition-all duration-500 shadow-xl overflow-hidden`}>
-              {/* Subtle background overlay elements */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -translate-y-12 translate-x-12" />
-              
-              {/* Main White Rounded Card containing QR code */}
-              <div className="bg-white rounded-[28px] p-6 shadow-xl w-full max-w-[260px] flex flex-col items-center gap-4 transition-all duration-300">
-                <div className="relative p-2 bg-white rounded-2xl flex items-center justify-center border border-slate-100">
-                  <canvas
-                    ref={canvasRef}
-                    className="max-w-full w-[170px] h-[170px] md:w-[190px] md:h-[190px] object-contain rounded-xl"
-                  />
-                </div>
-                
-                {/* Username label stylized beautifully just like instagram */}
-                {socialUsername && (
-                  <div className={`text-center font-display font-black tracking-wider text-sm md:text-base uppercase ${SOCIAL_THEMES[socialPlatform as keyof typeof SOCIAL_THEMES]?.textColor || 'text-[#0d9488]'} truncate max-w-full px-2 mt-1`}>
-                    @{socialUsername}
-                  </div>
-                )}
+          )}
+
+          {/* High Fidelity Instagram Theme Card View */}
+          <div className={`${renderError || !useSocialCard ? 'hidden' : ''} relative w-full rounded-2xl bg-gradient-to-b ${SOCIAL_THEMES[socialPlatform as keyof typeof SOCIAL_THEMES]?.bgGradient || 'from-[#f9ce34] via-[#ee2a7b] to-[#6228d7]'} p-6 py-8 flex flex-col items-center justify-center transition-all duration-500 shadow-xl overflow-hidden`}>
+            {/* Subtle background overlay elements */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full blur-2xl -translate-y-12 translate-x-12" />
+            
+            {/* Main White Rounded Card containing QR code */}
+            <div className="bg-white rounded-[28px] p-6 shadow-xl w-full max-w-[260px] flex flex-col items-center gap-4 transition-all duration-300">
+              <div className="relative p-2 bg-white rounded-2xl flex items-center justify-center border border-slate-100">
+                <canvas
+                  ref={useSocialCard ? canvasRef : null}
+                  className="max-w-full w-[170px] h-[170px] md:w-[190px] md:h-[190px] object-contain rounded-xl"
+                />
               </div>
+              
+              {/* Username label stylized beautifully just like instagram */}
+              {socialUsername && (
+                <div className={`text-center font-display font-black tracking-wider text-sm md:text-base uppercase ${SOCIAL_THEMES[socialPlatform as keyof typeof SOCIAL_THEMES]?.textColor || 'text-[#0d9488]'} truncate max-w-full px-2 mt-1`}>
+                  @{socialUsername}
+                </div>
+              )}
+            </div>
 
-              {/* Sub Action Card containing circular interactive buttons */}
-              <div className="bg-white rounded-2xl p-4 shadow-md w-full max-w-[260px] mt-4 flex justify-around gap-2 items-center-inner">
-                {/* Button 1: Share Profile */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    const platformLabel = SOCIAL_THEMES[socialPlatform as keyof typeof SOCIAL_THEMES]?.label || 'Social';
-                    if (navigator.share) {
-                      navigator.share({
-                        title: `${platformLabel} QR Profile`,
-                        text: `Scan my QR profile code for @${socialUsername}!`,
-                        url: getContentString()
-                      }).catch(() => {});
-                    } else {
-                      navigator.clipboard.writeText(getContentString());
-                      setCopied(true);
-                      setTimeout(() => setCopied(false), 2000);
-                    }
-                  }}
-                  className="flex flex-col items-center gap-1 bg-transparent hover:scale-[1.03] active:scale-95 transition-all focus:outline-none"
-                >
-                  <div className="w-10 h-10 rounded-full border border-slate-100 bg-slate-50 flex items-center justify-center text-slate-700 hover:bg-slate-100 shadow-sm transition-colors">
-                    <Share2 className="w-4 h-4 stroke-[2.2]" />
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-500 tracking-tight leading-none mt-1">Share profile</span>
-                </button>
-
-                {/* Button 2: Copy Link */}
-                <button
-                  type="button"
-                  onClick={() => {
+            {/* Sub Action Card containing circular interactive buttons */}
+            <div className="bg-white rounded-2xl p-4 shadow-md w-full max-w-[260px] mt-4 flex justify-around gap-2 items-center-inner">
+              {/* Button 1: Share Profile */}
+              <button
+                type="button"
+                onClick={() => {
+                  const platformLabel = SOCIAL_THEMES[socialPlatform as keyof typeof SOCIAL_THEMES]?.label || 'Social';
+                  if (navigator.share) {
+                    navigator.share({
+                      title: `${platformLabel} QR Profile`,
+                      text: `Scan my QR profile code for @${socialUsername}!`,
+                      url: getContentString()
+                    }).catch(() => {});
+                  } else {
                     navigator.clipboard.writeText(getContentString());
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
-                  }}
-                  className="flex flex-col items-center gap-1 bg-transparent hover:scale-[1.03] active:scale-95 transition-all focus:outline-none"
-                >
-                  <div className="w-10 h-10 rounded-full border border-slate-105 bg-slate-100/50 flex items-center justify-center text-indigo-600 dark:text-indigo-600 hover:bg-slate-100 shadow-sm transition-colors">
-                    {copied ? (
-                      <Check className="w-4 h-4 text-emerald-500 stroke-[2.5]" />
-                    ) : (
-                      <Link className="w-4 h-4 stroke-[2.2]" />
-                    )}
-                  </div>
-                  <span className="text-[10px] font-bold text-slate-500 tracking-tight leading-none mt-1">
-                    {copied ? 'Copied!' : 'Copy link'}
-                  </span>
-                </button>
-              </div>
+                  }
+                }}
+                className="flex flex-col items-center gap-1 bg-transparent hover:scale-[1.03] active:scale-95 transition-all focus:outline-none"
+              >
+                <div className="w-10 h-10 rounded-full border border-slate-100 bg-slate-50 flex items-center justify-center text-slate-700 hover:bg-slate-100 shadow-sm transition-colors">
+                  <Share2 className="w-4 h-4 stroke-[2.2]" />
+                </div>
+                <span className="text-[10px] font-bold text-slate-500 tracking-tight leading-none mt-1">Share profile</span>
+              </button>
+
+              {/* Button 2: Copy Link */}
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(getContentString());
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="flex flex-col items-center gap-1 bg-transparent hover:scale-[1.03] active:scale-95 transition-all focus:outline-none"
+              >
+                <div className="w-10 h-10 rounded-full border border-slate-105 bg-slate-100/50 flex items-center justify-center text-indigo-600 dark:text-indigo-600 hover:bg-slate-100 shadow-sm transition-colors">
+                  {copied ? (
+                    <Check className="w-4 h-4 text-emerald-500 stroke-[2.5]" />
+                  ) : (
+                    <Link className="w-4 h-4 stroke-[2.2]" />
+                  )}
+                </div>
+                <span className="text-[10px] font-bold text-slate-500 tracking-tight leading-none mt-1">
+                  {copied ? 'Copied!' : 'Copy link'}
+                </span>
+              </button>
             </div>
-          ) : (
-            /* Standard QR preview view */
-            <div className="relative group bg-slate-950 p-6 rounded-2xl border border-slate-800/80 shadow-inner flex items-center justify-center transition-all duration-500 hover:scale-[1.02]">
-              {/* Soft glow background based inside */}
-              <div className="absolute inset-0 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-2xl blur-xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-550" />
-              <canvas
-                ref={canvasRef}
-                className="max-w-full w-[240px] h-[240px] md:w-[260px] md:h-[260px] object-contain rounded-xl shadow-md"
-              />
-            </div>
-          )}
+          </div>
+
+          {/* Standard QR preview view */}
+          <div className={`${renderError || useSocialCard ? 'hidden' : ''} relative group bg-slate-950 p-6 rounded-2xl border border-slate-800/80 shadow-inner flex items-center justify-center transition-all duration-500 hover:scale-[1.02] w-full max-w-[280px]`}>
+            {/* Soft glow background based inside */}
+            <div className="absolute inset-0 bg-indigo-500/5 dark:bg-indigo-500/10 rounded-2xl blur-xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-550" />
+            <canvas
+              ref={!useSocialCard ? canvasRef : null}
+              className="max-w-full w-[240px] h-[240px] md:w-[260px] md:h-[260px] object-contain rounded-xl shadow-md"
+            />
+          </div>
 
           {/* Quick Metrics */}
           <div className="w-full grid grid-cols-2 gap-4 mt-6 border-t border-slate-800/60 pt-4 text-center">
