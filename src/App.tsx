@@ -319,7 +319,7 @@ const saveToSupabase = async (item: QRHistoryItem) => {
             </h1>
             
             <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl mx-auto">
-              Designed for modern professionals. Create beautifully branded QR &amp; Barcodes with custom logos, dynamic palettes, rounded dot matrices, and scan physical labels in real-time.
+              Designed for modern businesses &amp; creators. Generate instant Payment QRs (UPI, PayPal, Crypto, SEPA), WhatsApp direct chat links, URLs, Wi-Fi keys, barcodes, and scan physical codes in real-time.
             </p>
 
             <div className="flex items-center gap-6 justify-center flex-wrap pt-1">
