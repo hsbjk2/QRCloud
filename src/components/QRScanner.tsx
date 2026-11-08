@@ -22,7 +22,9 @@ import {
   Square,
   MessageSquare,
   Barcode,
-  ExternalLink
+  ExternalLink,
+  CreditCard,
+  MessageCircle
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { QRHistoryItem, ExtractedData } from '../types';
@@ -321,6 +323,10 @@ export default function QRScanner({ onAddHistory }: QRScannerProps) {
         return <Phone className="w-5 h-5 text-rose-500" />;
       case 'sms':
         return <MessageSquare className="w-5 h-5 text-cyan-500" />;
+      case 'whatsapp':
+        return <MessageCircle className="w-5 h-5 text-[#25D366]" />;
+      case 'payment':
+        return <CreditCard className="w-5 h-5 text-emerald-500" />;
       case 'barcode':
         return <Barcode className="w-5 h-5 text-violet-500" />;
       default:
