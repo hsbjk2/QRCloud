@@ -23,11 +23,31 @@ import {
   Github,
   Twitter,
   Link,
-  QrCode
+  QrCode,
+  CreditCard,
+  MessageCircle,
+  Wallet,
+  DollarSign,
+  Send,
+  ArrowUpRight,
+  IndianRupee,
+  Bitcoin,
+  Building,
+  CheckCircle2,
+  Sparkles
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { QRConfig, QRType, QRHistoryItem } from '../types';
-import { generateWiFiString, generateMailtoString, generateSMSString } from '../utils';
+import { 
+  generateWiFiString, 
+  generateMailtoString, 
+  generateSMSString,
+  generateWhatsAppString,
+  generateUPIString,
+  generatePayPalString,
+  generateCryptoString,
+  generateBankEPCString
+} from '../utils';
 
 interface QRGeneratorProps {
   onAddHistory: (item: QRHistoryItem) => void;
@@ -35,9 +55,10 @@ interface QRGeneratorProps {
 
 const PRESET_COLORS = [
   { name: 'Pitch Black', fg: '#000000', bg: '#ffffff' },
+  { name: 'WhatsApp Green', fg: '#25D366', bg: '#ffffff' },
+  { name: 'Fintech Emerald', fg: '#10b981', bg: '#ffffff' },
   { name: 'Electric Blue', fg: '#3b82f6', bg: '#ffffff' },
   { name: 'SaaS Indigo', fg: '#6366f1', bg: '#ffffff' },
-  { name: 'Emerald Forest', fg: '#10b981', bg: '#f0fdf4' },
   { name: 'Sunset Coral', fg: '#f43f5e', bg: '#fff1f2' },
   { name: 'Cyber Purple', fg: '#8b5cf6', bg: '#f5f3ff' },
   { name: 'Gold Onyx', fg: '#d97706', bg: '#fef3c7' },
@@ -45,6 +66,11 @@ const PRESET_COLORS = [
 
 const PRESET_LOGOS = [
   { name: 'None', url: '' },
+  { name: 'WhatsApp', url: 'whatsapp' },
+  { name: 'Payment', url: 'payment' },
+  { name: 'UPI', url: 'upi' },
+  { name: 'PayPal', url: 'paypal' },
+  { name: 'Bitcoin', url: 'bitcoin' },
   { name: 'Web', url: 'web' },
   { name: 'WiFi', url: 'wifi' },
   { name: 'Mail', url: 'mail' },
@@ -106,6 +132,38 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
   const [phoneNum, setPhoneNum] = useState('+14155552671');
   const [smsPhone, setSmsPhone] = useState('+14155552671');
   const [smsBody, setSmsBody] = useState('Sent instantly via my QRCloud dynamic code.');
+
+  // WhatsApp states
+  const [waCountryCode, setWaCountryCode] = useState('+1');
+  const [waNumber, setWaNumber] = useState('4155552671');
+  const [waMessage, setWaMessage] = useState('Hello! I scanned your QR code and wanted to connect.');
+
+  // Payment states
+  const [paymentMode, setPaymentMode] = useState<'upi' | 'paypal' | 'crypto' | 'bank' | 'custom'>('upi');
+  // UPI
+  const [upiId, setUpiId] = useState('merchant@upi');
+  const [upiName, setUpiName] = useState('Merchant Store');
+  const [upiAmount, setUpiAmount] = useState('299');
+  const [upiCurrency, setUpiCurrency] = useState('INR');
+  const [upiNote, setUpiNote] = useState('Payment for Order #1042');
+  // PayPal
+  const [paypalUsername, setPaypalUsername] = useState('mybusiness');
+  const [paypalAmount, setPaypalAmount] = useState('25.00');
+  const [paypalCurrency, setPaypalCurrency] = useState('USD');
+  // Crypto
+  const [cryptoType, setCryptoType] = useState<'bitcoin' | 'ethereum' | 'solana' | 'usdt'>('bitcoin');
+  const [cryptoAddress, setCryptoAddress] = useState('bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh');
+  const [cryptoAmount, setCryptoAmount] = useState('0.005');
+  const [cryptoMemo, setCryptoMemo] = useState('Payment deposit');
+  // Bank / SEPA
+  const [bankName, setBankName] = useState('Acme Corporation');
+  const [bankIban, setBankIban] = useState('DE89370400440532013000');
+  const [bankBic, setBankBic] = useState('DBEUTDFDXXX');
+  const [bankAmount, setBankAmount] = useState('150.00');
+  const [bankRef, setBankRef] = useState('INV-2026-901');
+  // Custom Payment Link
+  const [customPayUrl, setCustomPayUrl] = useState('https://cash.app/$mybrand');
+  const [customPayLabel, setCustomPayLabel] = useState('Cash App');
   
   // Social media link builder
   const [socialPlatform, setSocialPlatform] = useState<'instagram' | 'linkedin' | 'github' | 'twitter'>('instagram');
@@ -152,6 +210,35 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
     switch (activeTab) {
       case 'url':
         return url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
+      case 'whatsapp': {
+        const cleanCode = waCountryCode.replace(/[^0-9]/g, '');
+        const cleanNum = waNumber.replace(/[^0-9]/g, '');
+        const fullNumber = `${cleanCode}${cleanNum}`;
+        return generateWhatsAppString(fullNumber, waMessage);
+      }
+      case 'payment': {
+        if (paymentMode === 'upi') {
+          return generateUPIString({
+            pa: upiId,
+            pn: upiName,
+            am: upiAmount,
+            cu: upiCurrency,
+            tn: upiNote,
+          });
+        }
+        if (paymentMode === 'paypal') {
+          return generatePayPalString(paypalUsername, paypalAmount, paypalCurrency);
+        }
+        if (paymentMode === 'crypto') {
+          return generateCryptoString(cryptoType, cryptoAddress, cryptoAmount, cryptoMemo);
+        }
+        if (paymentMode === 'bank') {
+          return generateBankEPCString(bankName, bankIban, bankBic, bankAmount, bankRef);
+        }
+        return customPayUrl.startsWith('http://') || customPayUrl.startsWith('https://') 
+          ? customPayUrl 
+          : `https://${customPayUrl}`;
+      }
       case 'text':
         return text;
       case 'wifi':
@@ -221,6 +308,16 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
         break;
       case 'sms':
         isTabEmpty = !smsPhone.trim();
+        break;
+      case 'whatsapp':
+        isTabEmpty = !waNumber.trim();
+        break;
+      case 'payment':
+        if (paymentMode === 'upi') isTabEmpty = !upiId.trim();
+        else if (paymentMode === 'paypal') isTabEmpty = !paypalUsername.trim();
+        else if (paymentMode === 'crypto') isTabEmpty = !cryptoAddress.trim();
+        else if (paymentMode === 'bank') isTabEmpty = !bankIban.trim() || !bankName.trim();
+        else isTabEmpty = !customPayUrl.trim();
         break;
       case 'social':
         isTabEmpty = !socialUsername.trim();
@@ -437,6 +534,71 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
             ctx.beginPath();
             ctx.arc(cx, cy + r * 0.2, r * 0.4, Math.PI, 0);
             ctx.stroke();
+          } else if (logoPreset === 'whatsapp') {
+            // Draw WhatsApp bubble & phone
+            ctx.fillStyle = '#25D366';
+            ctx.beginPath();
+            ctx.arc(cx, cy, r * 1.05, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // White phone arc and bubble notch
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = Math.max(2.5, r * 0.22);
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.arc(cx, cy - r * 0.05, r * 0.5, 0.45, Math.PI * 0.82);
+            ctx.stroke();
+
+            // Speech notch
+            ctx.fillStyle = '#25D366';
+            ctx.beginPath();
+            ctx.moveTo(cx - r * 0.4, cy + r * 0.5);
+            ctx.lineTo(cx - r * 0.85, cy + r * 0.85);
+            ctx.lineTo(cx - r * 0.1, cy + r * 0.7);
+            ctx.fill();
+          } else if (logoPreset === 'payment') {
+            // Draw credit card
+            const w = r * 1.5;
+            const h = r * 1.05;
+            ctx.fillStyle = fgColor;
+            ctx.beginPath();
+            if (ctx.roundRect) ctx.roundRect(cx - w / 2, cy - h / 2, w, h, 4);
+            else ctx.rect(cx - w / 2, cy - h / 2, w, h);
+            ctx.fill();
+            ctx.fillStyle = bgColor;
+            ctx.fillRect(cx - w / 2, cy - h / 5, w, h * 0.25);
+            ctx.fillStyle = '#f59e0b';
+            ctx.fillRect(cx - w / 2 + 4, cy + 2, 6, 5);
+          } else if (logoPreset === 'upi') {
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(cx, cy, r * 1.05, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `900 ${Math.round(logoSizePixels * 0.38)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('UPI', cx, cy + 1);
+          } else if (logoPreset === 'paypal') {
+            ctx.fillStyle = '#0079C1';
+            ctx.beginPath();
+            ctx.arc(cx, cy, r * 1.05, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `italic 900 ${Math.round(logoSizePixels * 0.55)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('P', cx, cy + 1);
+          } else if (logoPreset === 'bitcoin') {
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.arc(cx, cy, r * 1.05, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `bold ${Math.round(logoSizePixels * 0.6)}px sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('₿', cx, cy + 1);
           }
           ctx.restore();
         }
@@ -468,6 +630,29 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
     phoneNum,
     smsPhone,
     smsBody,
+    waCountryCode,
+    waNumber,
+    waMessage,
+    paymentMode,
+    upiId,
+    upiName,
+    upiAmount,
+    upiCurrency,
+    upiNote,
+    paypalUsername,
+    paypalAmount,
+    paypalCurrency,
+    cryptoType,
+    cryptoAddress,
+    cryptoAmount,
+    cryptoMemo,
+    bankName,
+    bankIban,
+    bankBic,
+    bankAmount,
+    bankRef,
+    customPayUrl,
+    customPayLabel,
     socialPlatform,
     socialUsername,
     fgColor,
@@ -493,7 +678,15 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
       const content = getContentString();
       let title = 'Web Link';
       
-      if (activeTab === 'wifi') title = `WiFi: ${wifiSsid}`;
+      if (activeTab === 'whatsapp') {
+        title = `WhatsApp: ${waCountryCode} ${waNumber}`;
+      } else if (activeTab === 'payment') {
+        if (paymentMode === 'upi') title = `UPI: ${upiId} (${upiCurrency} ${upiAmount || 'any'})`;
+        else if (paymentMode === 'paypal') title = `PayPal: @${paypalUsername} (${paypalCurrency} ${paypalAmount || 'any'})`;
+        else if (paymentMode === 'crypto') title = `${cryptoType.toUpperCase()}: ${cryptoAddress.slice(0, 6)}...`;
+        else if (paymentMode === 'bank') title = `Bank SEPA: ${bankName}`;
+        else title = `Payment: ${customPayLabel || 'Custom Link'}`;
+      } else if (activeTab === 'wifi') title = `WiFi: ${wifiSsid}`;
       else if (activeTab === 'email') title = `Email: ${emailTo}`;
       else if (activeTab === 'phone') title = `Phone: ${phoneNum}`;
       else if (activeTab === 'sms') title = `SMS Recipient`;
@@ -734,6 +927,8 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
 
   const tabs: { id: QRType; label: string; icon: any }[] = [
     { id: 'url', label: 'URL Link', icon: Globe },
+    { id: 'whatsapp', label: 'WhatsApp', icon: MessageCircle },
+    { id: 'payment', label: 'Payment', icon: CreditCard },
     { id: 'text', label: 'Plain Text', icon: FileText },
     { id: 'wifi', label: 'WiFi config', icon: Wifi },
     { id: 'email', label: 'Mail link', icon: Mail },
@@ -788,6 +983,383 @@ export default function QRGenerator({ onAddHistory }: QRGeneratorProps) {
               transition={{ duration: 0.2 }}
               className="space-y-4 min-h-[140px]"
             >
+              {activeTab === 'whatsapp' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">
+                      WhatsApp Phone Number
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+                      <div className="sm:col-span-5">
+                        <select
+                          value={waCountryCode}
+                          onChange={(e) => setWaCountryCode(e.target.value)}
+                          className="w-full px-3 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all cursor-pointer"
+                        >
+                          <option value="+1">🇺🇸 +1 (US / CA)</option>
+                          <option value="+91">🇮🇳 +91 (India)</option>
+                          <option value="+44">🇬🇧 +44 (UK)</option>
+                          <option value="+971">🇦🇪 +971 (UAE)</option>
+                          <option value="+966">🇸🇦 +966 (Saudi)</option>
+                          <option value="+49">🇩🇪 +49 (Germany)</option>
+                          <option value="+33">🇫🇷 +33 (France)</option>
+                          <option value="+61">🇦🇺 +61 (Australia)</option>
+                          <option value="+55">🇧🇷 +55 (Brazil)</option>
+                          <option value="+52">🇲🇽 +52 (Mexico)</option>
+                          <option value="+34">🇪🇸 +34 (Spain)</option>
+                          <option value="+81">🇯🇵 +81 (Japan)</option>
+                          <option value="+65">🇸🇬 +65 (Singapore)</option>
+                          <option value="+62">🇮🇩 +62 (Indonesia)</option>
+                          <option value="+92">🇵🇰 +92 (Pakistan)</option>
+                          <option value="+880">🇧🇩 +880 (Bangladesh)</option>
+                          <option value="+234">🇳🇬 +234 (Nigeria)</option>
+                          <option value="+27">🇿🇦 +27 (South Africa)</option>
+                          <option value="+39">🇮🇹 +39 (Italy)</option>
+                          <option value="+7">🇷🇺 +7 (Russia)</option>
+                        </select>
+                      </div>
+                      <div className="sm:col-span-7 relative">
+                        <Phone className="absolute left-4 top-3.5 w-4 h-4 text-slate-400" />
+                        <input
+                          type="tel"
+                          value={waNumber}
+                          onChange={(e) => setWaNumber(e.target.value.replace(/[^0-9]/g, ''))}
+                          placeholder="Phone number"
+                          className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">
+                      Pre-filled Message (Optional)
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={waMessage}
+                      onChange={(e) => setWaMessage(e.target.value)}
+                      placeholder="Hi, I would like to get in touch..."
+                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all resize-none font-medium"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'payment' && (
+                <div className="space-y-4">
+                  {/* Clean Payment Mode Tabs */}
+                  <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 p-1 bg-slate-100 dark:bg-slate-800/60 rounded-2xl border border-slate-200/50 dark:border-slate-800">
+                    {[
+                      { id: 'upi', label: 'UPI', icon: IndianRupee },
+                      { id: 'paypal', label: 'PayPal', icon: DollarSign },
+                      { id: 'crypto', label: 'Crypto', icon: Bitcoin },
+                      { id: 'bank', label: 'Bank', icon: Building },
+                      { id: 'custom', label: 'Link', icon: Link }
+                    ].map((item) => {
+                      const ItemIcon = item.icon;
+                      const isChosen = paymentMode === item.id;
+                      return (
+                        <button
+                          type="button"
+                          key={item.id}
+                          onClick={() => setPaymentMode(item.id as any)}
+                          className={`flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl text-xs font-bold transition-all ${
+                            isChosen
+                              ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow-sm border border-slate-200/60 dark:border-slate-700'
+                              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                          }`}
+                        >
+                          <ItemIcon className="w-3.5 h-3.5" />
+                          <span>{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* UPI Inputs */}
+                  {paymentMode === 'upi' && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                          UPI ID (VPA)
+                        </label>
+                        <input
+                          type="text"
+                          value={upiId}
+                          onChange={(e) => setUpiId(e.target.value)}
+                          placeholder="merchant@upi"
+                          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                            Payee Name
+                          </label>
+                          <input
+                            type="text"
+                            value={upiName}
+                            onChange={(e) => setUpiName(e.target.value)}
+                            placeholder="Business Name"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                            Amount (INR ₹)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="any"
+                            value={upiAmount}
+                            onChange={(e) => setUpiAmount(e.target.value)}
+                            placeholder="Optional amount"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                          Note (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={upiNote}
+                          onChange={(e) => setUpiNote(e.target.value)}
+                          placeholder="Order or invoice note"
+                          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-medium"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* PayPal Inputs */}
+                  {paymentMode === 'paypal' && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                          PayPal.Me Username
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-3.5 text-xs font-bold text-slate-400">
+                            paypal.me/
+                          </span>
+                          <input
+                            type="text"
+                            value={paypalUsername}
+                            onChange={(e) => setPaypalUsername(e.target.value.replace(/[^a-zA-Z0-9_-]/g, ''))}
+                            placeholder="username"
+                            className="w-full pl-24 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                            Amount (Optional)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="any"
+                            value={paypalAmount}
+                            onChange={(e) => setPaypalAmount(e.target.value)}
+                            placeholder="25.00"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                            Currency
+                          </label>
+                          <select
+                            value={paypalCurrency}
+                            onChange={(e) => setPaypalCurrency(e.target.value)}
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                          >
+                            <option value="USD">USD ($)</option>
+                            <option value="EUR">EUR (€)</option>
+                            <option value="GBP">GBP (£)</option>
+                            <option value="CAD">CAD ($)</option>
+                            <option value="AUD">AUD ($)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Crypto Inputs */}
+                  {paymentMode === 'crypto' && (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-4 gap-2">
+                        {[
+                          { id: 'bitcoin', label: 'BTC' },
+                          { id: 'ethereum', label: 'ETH' },
+                          { id: 'solana', label: 'SOL' },
+                          { id: 'usdt', label: 'USDT' }
+                        ].map((coin) => (
+                          <button
+                            key={coin.id}
+                            type="button"
+                            onClick={() => setCryptoType(coin.id as any)}
+                            className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
+                              cryptoType === coin.id
+                                ? 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-500 text-indigo-600 dark:text-indigo-400'
+                                : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200/60 dark:border-slate-800 text-slate-600 dark:text-slate-400'
+                            }`}
+                          >
+                            {coin.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                          Wallet Address
+                        </label>
+                        <input
+                          type="text"
+                          value={cryptoAddress}
+                          onChange={(e) => setCryptoAddress(e.target.value.trim())}
+                          placeholder="Public address"
+                          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-xs font-mono font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                            Amount (Optional)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="any"
+                            value={cryptoAmount}
+                            onChange={(e) => setCryptoAmount(e.target.value)}
+                            placeholder="0.00"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                            Memo (Optional)
+                          </label>
+                          <input
+                            type="text"
+                            value={cryptoMemo}
+                            onChange={(e) => setCryptoMemo(e.target.value)}
+                            placeholder="Note"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Bank Inputs */}
+                  {paymentMode === 'bank' && (
+                    <div className="space-y-3">
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                          Beneficiary Name
+                        </label>
+                        <input
+                          type="text"
+                          value={bankName}
+                          onChange={(e) => setBankName(e.target.value)}
+                          placeholder="Account Name"
+                          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                          IBAN
+                        </label>
+                        <input
+                          type="text"
+                          value={bankIban}
+                          onChange={(e) => setBankIban(e.target.value.toUpperCase())}
+                          placeholder="IBAN Number"
+                          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-mono font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                            BIC / SWIFT
+                          </label>
+                          <input
+                            type="text"
+                            value={bankBic}
+                            onChange={(e) => setBankBic(e.target.value.toUpperCase())}
+                            placeholder="BIC Code"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-mono font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                            Amount (EUR €)
+                          </label>
+                          <input
+                            type="number"
+                            min="0"
+                            step="any"
+                            value={bankAmount}
+                            onChange={(e) => setBankAmount(e.target.value)}
+                            placeholder="Optional"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                          Reference (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={bankRef}
+                          onChange={(e) => setBankRef(e.target.value)}
+                          placeholder="Invoice or reference"
+                          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Custom Link Inputs */}
+                  {paymentMode === 'custom' && (
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">
+                        Payment Link URL
+                      </label>
+                      <div className="relative">
+                        <Link className="absolute left-4 top-3.5 w-4 h-4 text-slate-400" />
+                        <input
+                          type="text"
+                          value={customPayUrl}
+                          onChange={(e) => setCustomPayUrl(e.target.value)}
+                          placeholder="https://cash.app/$cashtag or Stripe link"
+                          className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/40 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-slate-800 dark:text-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-mono"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {activeTab === 'url' && (
                 <div>
                   <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-2">
